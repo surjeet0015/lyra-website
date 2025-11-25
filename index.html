@@ -229,6 +229,9 @@
                 <div class="w-12 h-12 bg-gradient-to-br from-pink-400 to-purple-500 text-white rounded-full flex items-center justify-center text-xl shadow-lg cursor-pointer hover:scale-110 transition" onclick="app.toggleThemeModal()" title="Themes">🎨</div>
             </div>
             <div class="mt-auto flex flex-col gap-4 items-center">
+                 <!-- PRIVACY BUTTON -->
+                 <div class="w-10 h-10 bg-indigo-400/80 rounded-full flex items-center justify-center text-sm shadow-md cursor-pointer hover:bg-indigo-500 transition text-white" onclick="app.setView('privacy')" title="Privacy Policy">🛡️</div>
+                 
                  <div class="w-10 h-10 bg-red-400/80 rounded-full flex items-center justify-center text-sm shadow-md cursor-pointer hover:bg-red-500 transition text-white" onclick="app.logout()" title="Logout">🚪</div>
                  <div class="w-10 h-10 bg-yellow-400/80 rounded-full flex items-center justify-center text-sm shadow-md cursor-pointer animate-bounce" onclick="app.togglePremium()">👑</div>
             </div>
@@ -276,7 +279,7 @@
                 </div>
             </div>
 
-            <!-- 2. To-Do View (New) -->
+            <!-- 2. To-Do View -->
             <div id="view-todo" class="view-section hidden flex-1 min-h-0 flex flex-col">
                 <h2 class="text-2xl font-bold mb-4 flex items-center gap-2 shrink-0"><span class="text-3xl">📝</span> Daily Goals</h2>
                 
@@ -288,7 +291,6 @@
                 </div>
 
                 <div id="todo-list" class="flex-1 overflow-y-auto pr-2 space-y-3 min-h-0">
-                    <!-- Tasks go here -->
                     <div class="text-center opacity-60 mt-10"><p>No tasks yet! Time to relax? 😴</p></div>
                 </div>
             </div>
@@ -361,6 +363,129 @@
                     <button id="btn-chat-send" onclick="app.sendMessage()" class="w-12 h-12 bg-pink-500 text-white rounded-xl flex items-center justify-center shadow-lg hover:scale-105 transition"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>
+
+            <!-- 7. Privacy Policy View -->
+            <div id="view-privacy" class="view-section hidden flex-1 min-h-0 flex flex-col h-full relative">
+                
+                <!-- Header -->
+                <div class="flex items-center gap-3 mb-6 shrink-0 border-b border-white/20 pb-4">
+                    <div class="text-4xl animate-float">🛡️</div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800">Privacy Policy</h2>
+                        <p class="text-gray-600 text-sm">Transparency is our policy.</p>
+                    </div>
+                    <button onclick="app.setView('timer')" class="ml-auto bg-white/40 hover:bg-white/60 text-gray-800 px-4 py-2 rounded-full font-bold transition">
+                        <i class="fas fa-times"></i> Close
+                    </button>
+                </div>
+
+                <!-- Scrollable Content -->
+                <div class="flex-1 overflow-y-auto pr-4 space-y-6 custom-scrollbar">
+                    
+                    <!-- Introduction -->
+                    <div class="bg-white/40 p-6 rounded-2xl shadow-sm backdrop-blur-md">
+                        <h3 class="text-xl font-bold mb-3 flex items-center gap-2"><span class="text-2xl">📜</span> 1. Introduction</h3>
+                        <p class="opacity-80 leading-relaxed text-sm">
+                            Welcome to <strong>Cozy Focus</strong>. We respect your privacy and are committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our website and tell you about your privacy rights and how the law protects you. By using Cozy Focus, you agree to the collection and use of information in accordance with this policy.
+                        </p>
+                    </div>
+
+                    <!-- Data Collection -->
+                    <div class="bg-white/40 p-6 rounded-2xl shadow-sm backdrop-blur-md">
+                        <h3 class="text-xl font-bold mb-3 flex items-center gap-2"><span class="text-2xl">🍪</span> 2. Data We Collect</h3>
+                        <p class="opacity-80 leading-relaxed text-sm mb-3">
+                            We collect several different types of information for various purposes to provide and improve our Service to you:
+                        </p>
+                        <ul class="list-disc list-inside mt-3 space-y-2 text-sm opacity-80 ml-2">
+                            <li><strong>Personal Identification Information:</strong> If you choose to sign in with Google, we store your basic profile information including your User ID (UID), Display Name, and Email Address solely for the purpose of saving your progress.</li>
+                            <li><strong>Usage Data:</strong> We collect data on how you interact with the app, including your virtual coin balance, experience points (XP), current level, inventory items, and your room layout.</li>
+                            <li><strong>To-Do List Data:</strong> The tasks you enter into the application are stored to persist your list between sessions.</li>
+                            <li><strong>Offline Data:</strong> If you use "Offline Mode" or "Continue Offline," all data is stored locally on your device using browser `LocalStorage`. In this mode, no data is transmitted to our servers.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Data Usage -->
+                    <div class="bg-white/40 p-6 rounded-2xl shadow-sm backdrop-blur-md">
+                        <h3 class="text-xl font-bold mb-3 flex items-center gap-2"><span class="text-2xl">🛠️</span> 3. How We Use Data</h3>
+                        <p class="opacity-80 leading-relaxed text-sm">
+                            Cozy Focus uses the collected data for various purposes:
+                        </p>
+                        <ul class="list-disc list-inside mt-3 space-y-2 text-sm opacity-80 ml-2">
+                            <li>To provide and maintain the Service.</li>
+                            <li>To notify you about changes to our Service.</li>
+                            <li>To allow you to participate in interactive features of our Service (like the Chat, Shop, and Room) when you choose to do so.</li>
+                            <li>To provide customer care and support.</li>
+                            <li>To monitor the usage of the Service.</li>
+                            <li>To detect, prevent and address technical issues.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Third Parties -->
+                    <div class="bg-white/40 p-6 rounded-2xl shadow-sm backdrop-blur-md">
+                        <h3 class="text-xl font-bold mb-3 flex items-center gap-2"><span class="text-2xl">🧠</span> 4. Service Providers</h3>
+                        <p class="opacity-80 leading-relaxed text-sm">
+                            We employ third-party companies and individuals to facilitate our Service ("Service Providers"), to provide the Service on our behalf, to perform Service-related services or to assist us in analyzing how our Service is used.
+                        </p>
+                        <ul class="list-disc list-inside mt-3 space-y-2 text-sm opacity-80 ml-2">
+                            <li><strong>Firebase (Google):</strong> We use Google Firebase for hosting, database management (Firestore), and authentication. Their privacy policy can be viewed at Google's Privacy Policy page.</li>
+                            <li><strong>Pollinations.ai:</strong> We use the Pollinations.ai API to generate AI responses for the "Lyra" chat feature and Brain Gym quizzes. 
+                            <span class="bg-red-100 text-red-600 px-2 py-0.5 rounded text-xs font-bold">Important:</span> Text you send to Lyra is processed by Pollinations.ai. Please do not share sensitive personal information (like passwords, addresses, or credit card numbers) in the chat.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Cookies -->
+                    <div class="bg-white/40 p-6 rounded-2xl shadow-sm backdrop-blur-md">
+                        <h3 class="text-xl font-bold mb-3 flex items-center gap-2"><span class="text-2xl">🍪</span> 5. Tracking & Cookies</h3>
+                        <p class="opacity-80 leading-relaxed text-sm">
+                            We use cookies and similar tracking technologies to track the activity on our Service and hold certain information. Cookies are files with small amount of data which may include an anonymous unique identifier. You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent. However, if you do not accept cookies, you may not be able to use some portions of our Service (like staying logged in).
+                        </p>
+                    </div>
+
+                    <!-- Data Security -->
+                    <div class="bg-white/40 p-6 rounded-2xl shadow-sm backdrop-blur-md">
+                        <h3 class="text-xl font-bold mb-3 flex items-center gap-2"><span class="text-2xl">🔒</span> 6. Security of Data</h3>
+                        <p class="opacity-80 leading-relaxed text-sm">
+                            The security of your data is important to us, but remember that no method of transmission over the Internet, or method of electronic storage is 100% secure. While we strive to use commercially acceptable means to protect your Personal Data, we cannot guarantee its absolute security. All authenticated user data is secured by Google Firebase's security rules.
+                        </p>
+                    </div>
+
+                    <!-- Children -->
+                    <div class="bg-white/40 p-6 rounded-2xl shadow-sm backdrop-blur-md">
+                        <h3 class="text-xl font-bold mb-3 flex items-center gap-2"><span class="text-2xl">🧸</span> 7. Children's Privacy</h3>
+                        <p class="opacity-80 leading-relaxed text-sm">
+                            Our Service does not address anyone under the age of 13 ("Children"). We do not knowingly collect personally identifiable information from anyone under the age of 13. If you are a parent or guardian and you are aware that your Children has provided us with Personal Data, please contact us. If we become aware that we have collected Personal Data from children without verification of parental consent, we take steps to remove that information from our servers.
+                        </p>
+                    </div>
+
+                    <!-- Changes -->
+                    <div class="bg-white/40 p-6 rounded-2xl shadow-sm backdrop-blur-md">
+                        <h3 class="text-xl font-bold mb-3 flex items-center gap-2"><span class="text-2xl">📝</span> 8. Changes to Policy</h3>
+                        <p class="opacity-80 leading-relaxed text-sm">
+                            We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page. You are advised to review this Privacy Policy periodically for any changes. Changes to this Privacy Policy are effective when they are posted on this page.
+                        </p>
+                    </div>
+
+                    <!-- Deletion Zone -->
+                    <div class="bg-white/40 p-6 rounded-2xl shadow-sm backdrop-blur-md border border-red-200">
+                        <h3 class="text-xl font-bold mb-3 flex items-center gap-2 text-red-500"><span class="text-2xl">🗑️</span> 9. Data Deletion & Rights</h3>
+                        <p class="opacity-80 leading-relaxed text-sm mb-4">
+                            Under certain circumstances, you have rights under data protection laws in relation to your personal data, including the right to request access, correction, erasure, restriction, transfer, to object to processing, to portability of data and (where the lawful ground of processing is consent) to withdraw consent.
+                            <br><br>
+                            If you wish to delete all local data stored on this device immediately, you may use the button below. <strong>This action cannot be undone.</strong>
+                        </p>
+                        <button onclick="app.showModal('Delete Data?', 'This will wipe your local storage and log you out. Are you sure?', '⚠️', [{label:'Yes, Delete', class:'bg-red-500 text-white', onClick:()=>{ localStorage.clear(); location.reload(); }, close:true}])" class="bg-red-400/80 hover:bg-red-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition flex items-center gap-2 w-full justify-center">
+                            <i class="fas fa-trash"></i> Delete My Local Data
+                        </button>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="text-center opacity-50 text-xs py-4">
+                        <p>Last Updated: November 2025 • Made with 💖 for Students</p>
+                    </div>
+
+                </div>
+            </div>
+
         </div>
     </div>
 
