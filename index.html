@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cozy Focus - Lyra Gold Edition</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Comfortaa -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpOKq9ai5OPtAMdEq8FJ8HmjeDAdfwwMA",
+            authDomain: "lyraapp-b3f74.firebaseapp.com",
+            projectId: "lyraapp-b3f74",
+            storageBucket: "lyraapp-b3f74.firebasestorage.app",
+            messagingSenderId: "44052139790",
+            appId: "1:44052139790:web:5954a9837d88b79ff7d15f"
+        };
+
+        let app;
+        try {
+            app = initializeApp(firebaseConfig);
+        } catch (e) {
+            console.error("Firebase Init Error:", e);
+        }
+        
+        if (app) {
+            window.db = getFirestore(app);
+            window.auth = getAuth(app);
+            window.googleProvider = new GoogleAuthProvider();
+            window.signInWithPopup = signInWithPopup;
+            window.signInAnonymously = signInAnonymously;
+            window.signOut = signOut;
+            window.onAuthStateChanged = onAuthStateChanged;
+            
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                 signInWithCustomToken(window.auth, __initial_auth_token).catch(e => console.log("Auth Token Error", e));
+            }
+
+            // USE THE SAME APP ID AS THE REACT APP TO SYNC DATA!
+            window.appId = typeof __app_id !== 'undefined' ? __app_id : 'cozy-kitchen-local';
+            window.doc = doc; window.setDoc = setDoc; window.getDoc = getDoc; 
+            window.collection = collection; window.addDoc = addDoc;
+        } else {
+            console.log("Running in Offline/Guest Mode");
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Comfortaa', cursive; overflow: hidden; margin: 0; padding: 0; background: #000; }
+        
+        /* --- BASE SKY SYSTEM (Default) --- */
+        .sky-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            animation: skyCycle 1500s infinite linear; 
+            overflow: hidden;
+            transition: opacity 1s ease;
+        }
+
+        @keyframes skyCycle {
+            0% { background: linear-gradient(180deg, #4facfe 0%, #00f2fe 50%, #E0F7FA 100%); }
+            25% { background: linear-gradient(180deg, #ff9966 0%, #ff5e62 50%, #F4D03F 100%); }
+            40% { background: linear-gradient(180deg, #2c3e50 0%, #4ca1af 50%, #000000 100%); }
+            50% { background: linear-gradient(180deg, #0f0c29 0%, #302b63 50%, #24243e 100%); }
+            75% { background: linear-gradient(180deg, #141E30 0%, #243B55 50%, #000000 100%); }
+            90% { background: linear-gradient(180deg, #f6d365 0%, #fda085 50%, #87CEEB 100%); }
+            100% { background: linear-gradient(180deg, #4facfe 0%, #00f2fe 50%, #E0F7FA 100%); }
+        }
+
+        .orbit-container {
+            position: absolute; top: 100%; left: 50%; width: 160vh; height: 160vh;
+            margin-left: -80vh; margin-top: -80vh;
+            animation: orbitRotate 1500s infinite linear; 
+        }
+        @keyframes orbitRotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .sun {
+            position: absolute; top: 0; left: 50%; width: 100px; height: 100px;
+            background: radial-gradient(circle, #FFD700 20%, rgba(255, 215, 0, 0.5) 60%, transparent 80%);
+            border-radius: 50%; box-shadow: 0 0 60px #FFD700; transform: translate(-50%, -50%);
+        }
+
+        .moon {
+            position: absolute; bottom: 0; left: 50%; width: 80px; height: 80px;
+            background: radial-gradient(circle at 30% 30%, #fdfbfb 0%, #ebedee 100%);
+            border-radius: 50%; box-shadow: 0 0 40px #ffffff; transform: translate(-50%, 50%) rotate(180deg);
+        }
+
+        .clouds-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; animation: cloudsDim 1500s infinite linear; }
+        @keyframes cloudsDim { 0%, 30% { opacity: 1; } 45%, 80% { opacity: 0.3; } 90%, 100% { opacity: 1; } }
+        .cloud { position: absolute; background: rgba(255, 255, 255, 0.7); border-radius: 50px; backdrop-filter: blur(4px); animation: cloudDrift linear infinite; }
+        .cloud::after, .cloud::before { content: ''; position: absolute; background: inherit; border-radius: 50%; }
+        .cloud.one { width: 120px; height: 40px; top: 10%; animation-duration: 25s; left: -150px; }
+        .cloud.one::after { width: 50px; height: 50px; top: -25px; left: 20px; }
+        .cloud.one::before { width: 40px; height: 40px; top: -15px; left: 60px; }
+        .cloud.two { width: 180px; height: 60px; top: 20%; animation-duration: 35s; animation-delay: -10s; left: -200px; opacity: 0.8; }
+        .cloud.two::after { width: 80px; height: 80px; top: -40px; left: 30px; }
+        .cloud.two::before { width: 60px; height: 60px; top: -20px; left: 90px; }
+        .cloud.three { width: 100px; height: 35px; top: 40%; animation-duration: 45s; animation-delay: -5s; left: -120px; opacity: 0.5; }
+        @keyframes cloudDrift { 0% { left: -200px; } 100% { left: 110%; } }
+        
+        .stars-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; animation: starsFade 1500s infinite linear; }
+        @keyframes starsFade { 0%, 35% { opacity: 0; } 45%, 55% { opacity: 1; } 80%, 100% { opacity: 0; } }
+        .star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; box-shadow: 0 0 4px white; animation: twinkle 3s infinite ease-in-out; }
+        @keyframes twinkle { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
+
+        /* --- THEME LAYERS --- */
+        #theme-sakura { position: fixed; inset: 0; z-index: -1; opacity: 0; transition: opacity 1s; pointer-events: none; background: linear-gradient(to bottom, #ffe2e2, #ffb6c1); }
+        .petal { position: absolute; background: #ffc0cb; opacity: 0.8; border-radius: 100% 0% 100% 0%; animation: petalFall linear infinite, petalSway ease-in-out infinite alternate; }
+        @keyframes petalFall { 0% { top: -10%; } 100% { top: 110%; } }
+        @keyframes petalSway { 0% { transform: translateX(0) rotate(0deg); } 100% { transform: translateX(20px) rotate(45deg); } }
+
+        #theme-rain { position: fixed; inset: 0; z-index: -1; opacity: 0; transition: opacity 1s; pointer-events: none; background: linear-gradient(to bottom, #000428, #004e92); }
+        .rain-streak { position: absolute; background: rgba(255,255,255,0.3); width: 1px; height: 30px; animation: rainFall 0.7s linear infinite; }
+        @keyframes rainFall { 0% { top: -10%; } 100% { top: 110%; } }
+
+        #theme-warp { position: fixed; inset: 0; z-index: -1; opacity: 0; transition: opacity 1s; pointer-events: none; background: #000; }
+        canvas { display: block; width: 100%; height: 100%; }
+
+        #theme-aurora { position: fixed; inset: 0; z-index: -1; opacity: 0; transition: opacity 1s; pointer-events: none; background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab); background-size: 400% 400%; animation: auroraGradient 15s ease infinite; }
+        @keyframes auroraGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        /* --- UI Styles --- */
+        .glass {
+            background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            transition: background 1s;
+        }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        .animate-float { animation: float 4s ease-in-out infinite; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.4); border-radius: 10px; }
+        .room-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(3, 1fr); gap: 8px; aspect-ratio: 4/3; }
+        .room-cell { border: 2px dashed rgba(255,255,255,0.3); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 2rem; cursor: pointer; }
+        .room-cell:hover { background: rgba(255,255,255,0.1); }
+        .dot-bounce { animation: bounce 0.6s infinite alternate; }
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        @keyframes bounce { to { transform: translateY(-4px); } }
+
+        .locked-theme { position: relative; opacity: 0.8; cursor: not-allowed; filter: grayscale(0.8); }
+        .locked-theme::after { content: '👑'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        
+        /* AESTHETIC MODAL */
+        #aesthetic-modal { transition: opacity 0.3s ease, visibility 0.3s; }
+        #aesthetic-modal.hidden-modal { opacity: 0; visibility: hidden; pointer-events: none; }
+        #aesthetic-modal .modal-content { transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        #aesthetic-modal:not(.hidden-modal) .modal-content { transform: scale(1); }
+
+        /* TODO STYLES */
+        .todo-item { transition: all 0.3s ease; }
+        .todo-item.completed { opacity: 0.5; text-decoration: line-through; background: rgba(255,255,255,0.2) !important; }
+        .todo-check { cursor: pointer; width: 24px; height: 24px; border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .todo-item.completed .todo-check { background: #4ade80; border-color: #4ade80; }
+
+        /* LOGIN VIEW STYLES */
+        #view-login { z-index: 100; }
+    </style>
+</head>
+<body class="h-screen w-screen flex items-center justify-center text-gray-800 overflow-hidden" id="app-body">
+
+    <!-- 0. DEFAULT SKY -->
+    <div class="sky-container" id="default-sky">
+        <div class="orbit-container"><div class="sun"></div><div class="moon"></div></div>
+        <div class="stars-container" id="stars-layer"></div>
+        <div class="clouds-container"><div class="cloud one"></div><div class="cloud two"></div><div class="cloud three"></div></div>
+    </div>
+    <!-- Themes -->
+    <div id="theme-sakura"></div>
+    <div id="theme-rain"></div>
+    <div id="theme-warp"><canvas id="warp-canvas"></canvas></div>
+    <div id="theme-aurora"></div>
+
+    <!-- 1. LOGIN VIEW (INITIAL) -->
+    <div id="view-login" class="fixed inset-0 flex items-center justify-center p-4 transition-opacity duration-700">
+        <div class="glass p-10 rounded-3xl text-center max-w-lg w-full flex flex-col items-center animate-float shadow-2xl border border-white/40">
+            <div class="text-8xl mb-6">🧸</div>
+            <h1 class="text-4xl font-bold text-white mb-2 drop-shadow-md">Cozy Focus</h1>
+            <p class="text-white/80 mb-8">Login to sync Gold status & Tasks.</p>
+            
+            <div class="w-full mb-4 space-y-3">
+                <button onclick="app.loginGoogle()" class="bg-white text-gray-800 text-lg font-bold px-8 py-3 rounded-full shadow-xl hover:scale-105 hover:bg-gray-50 transition w-full flex items-center justify-center gap-3">
+                    <i class="fab fa-google text-red-500"></i> Sign in with Google
+                </button>
+                
+                <!-- NEW OFFLINE BUTTON -->
+                <button onclick="app.enterOffline()" class="bg-pink-100 text-pink-600 text-lg font-bold px-8 py-3 rounded-full shadow-xl hover:scale-105 hover:bg-pink-200 transition w-full flex items-center justify-center gap-3">
+                    <i class="fas fa-plug"></i> Continue Offline
+                </button>
+            </div>
+            
+            <p class="mt-2 text-xs text-white/60">
+                <i class="fas fa-cloud"></i> Cloud Save Enabled
+            </p>
+        </div>
+    </div>
+
+    <!-- MAIN APP LAYOUT (Hidden initially) -->
+    <div id="app-layout" class="relative w-full h-full max-w-6xl mx-auto p-4 flex flex-col md:flex-row gap-4 opacity-0 pointer-events-none transition-opacity duration-1000">
+        
+        <!-- Sidebar -->
+        <div class="glass rounded-3xl p-4 flex flex-row md:flex-col justify-between items-center md:w-24 shrink-0 z-50">
+            <div class="flex flex-row md:flex-col gap-6 items-center">
+                <div class="w-12 h-12 bg-white/50 rounded-full flex items-center justify-center text-2xl shadow-lg cursor-pointer hover:scale-110 transition" onclick="app.setView('timer')" title="Timer">🍅</div>
+                <div class="w-12 h-12 bg-white/50 rounded-full flex items-center justify-center text-2xl shadow-lg cursor-pointer hover:scale-110 transition" onclick="app.setView('todo')" title="To-Do List">📝</div>
+                <div class="w-12 h-12 bg-white/50 rounded-full flex items-center justify-center text-2xl shadow-lg cursor-pointer hover:scale-110 transition" onclick="app.setView('brain')" title="Brain Gym">🧠</div>
+                <div class="w-12 h-12 bg-white/50 rounded-full flex items-center justify-center text-2xl shadow-lg cursor-pointer hover:scale-110 transition" onclick="app.setView('room')" title="My Room">🏠</div>
+                <div class="w-12 h-12 bg-white/50 rounded-full flex items-center justify-center text-2xl shadow-lg cursor-pointer hover:scale-110 transition" onclick="app.setView('shop')" title="Shop">🛍️</div>
+                <div class="w-12 h-12 bg-white/50 rounded-full flex items-center justify-center text-2xl shadow-lg cursor-pointer hover:scale-110 transition" onclick="app.setView('chat')" title="Lyra AI">🤖</div>
+                <div class="w-12 h-12 bg-gradient-to-br from-pink-400 to-purple-500 text-white rounded-full flex items-center justify-center text-xl shadow-lg cursor-pointer hover:scale-110 transition" onclick="app.toggleThemeModal()" title="Themes">🎨</div>
+            </div>
+            <div class="mt-auto flex flex-col gap-4 items-center">
+                 <div class="w-10 h-10 bg-red-400/80 rounded-full flex items-center justify-center text-sm shadow-md cursor-pointer hover:bg-red-500 transition text-white" onclick="app.logout()" title="Logout">🚪</div>
+                 <div class="w-10 h-10 bg-yellow-400/80 rounded-full flex items-center justify-center text-sm shadow-md cursor-pointer animate-bounce" onclick="app.togglePremium()">👑</div>
+            </div>
+        </div>
+
+        <!-- Main Panel -->
+        <div class="flex-1 glass rounded-3xl p-6 relative overflow-hidden flex flex-col transition-all duration-500" id="main-panel">
+            
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-6 shrink-0">
+                <div class="flex items-center gap-3 bg-white/30 px-4 py-2 rounded-full shadow-sm">
+                    <span class="text-2xl">🧸</span>
+                    <div>
+                        <p class="text-xs font-bold opacity-70">Welcome, <span id="username-disp">Student</span></p>
+                        <p class="text-xs font-bold opacity-70">Level <span id="lvl-disp">1</span></p>
+                        <div class="w-24 h-2 bg-white/40 rounded-full overflow-hidden">
+                            <div class="h-full bg-green-400" id="xp-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 bg-white/30 px-4 py-2 rounded-full shadow-sm cursor-pointer" onclick="app.setView('shop')">
+                    <span class="text-xl">🪙</span>
+                    <span class="font-bold text-lg" id="coin-disp">0</span>
+                </div>
+            </div>
+
+            <!-- 1. Timer View -->
+            <div id="view-timer" class="view-section h-full flex flex-col items-center justify-center relative">
+                <div class="absolute top-0 right-0 bg-white/20 px-3 py-1 rounded-full text-xs font-bold status-badge">Focus Mode</div>
+                <div class="relative w-64 h-64 md:w-80 md:h-80">
+                    <svg class="w-full h-full transform -rotate-90">
+                        <circle cx="50%" cy="50%" r="45%" stroke="currentColor" stroke-width="10" fill="transparent" class="text-white/20" />
+                        <circle id="timer-circle" cx="50%" cy="50%" r="45%" stroke="currentColor" stroke-width="10" fill="transparent" class="text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] transition-all duration-1000" stroke-dasharray="283" stroke-dashoffset="0" stroke-linecap="round" />
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="text-8xl animate-float" id="pet-avatar">🧸</div>
+                    </div>
+                </div>
+                <div class="mt-8 text-center">
+                    <h1 class="text-6xl font-bold mb-4 drop-shadow-md" id="time-display">25:00</h1>
+                    <div class="flex gap-4 justify-center">
+                        <button id="btn-start" onclick="app.toggleTimer()" class="bg-white text-purple-600 px-8 py-3 rounded-full font-bold text-xl shadow-lg hover:scale-105 transition hover:bg-purple-50">Start Focus</button>
+                        <button id="btn-break" onclick="app.tryPause()" class="bg-white/30 text-white px-6 py-3 rounded-full font-bold text-xl shadow-lg hover:scale-105 transition hover:bg-white/40 hidden">Pause</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. To-Do View (New) -->
+            <div id="view-todo" class="view-section hidden flex-1 min-h-0 flex flex-col">
+                <h2 class="text-2xl font-bold mb-4 flex items-center gap-2 shrink-0"><span class="text-3xl">📝</span> Daily Goals</h2>
+                
+                <div class="flex gap-2 mb-4 shrink-0">
+                    <input type="text" id="todo-input" placeholder="Add a new task..." class="flex-1 bg-white/50 border-0 rounded-xl px-4 py-3 outline-none focus:bg-white/70 transition placeholder-gray-600" onkeypress="if(event.key==='Enter') app.addTodo()">
+                    <button onclick="app.addTodo()" class="w-12 h-12 bg-green-500 text-white rounded-xl flex items-center justify-center shadow-lg hover:scale-105 transition">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+
+                <div id="todo-list" class="flex-1 overflow-y-auto pr-2 space-y-3 min-h-0">
+                    <!-- Tasks go here -->
+                    <div class="text-center opacity-60 mt-10"><p>No tasks yet! Time to relax? 😴</p></div>
+                </div>
+            </div>
+
+            <!-- 3. Brain Gym View -->
+            <div id="view-brain" class="view-section hidden flex-1 min-h-0 flex flex-col relative">
+                <div id="brain-lock-overlay" class="absolute inset-0 z-20 bg-gray-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-white rounded-3xl hidden">
+                     <div class="text-6xl mb-4">🔒</div>
+                     <h3 class="text-2xl font-bold mb-2">Brain Gym Locked</h3>
+                     <p class="mb-4 opacity-80 text-center px-8">AI Quizzes are a Lyra Gold feature.<br>Upgrade to access infinite practice questions!</p>
+                     <button onclick="app.togglePremium()" class="bg-yellow-400 text-black px-8 py-3 rounded-full font-bold hover:scale-105 transition shadow-lg hover:bg-yellow-300">✨ Unlock Gold</button>
+                </div>
+                <h2 class="text-2xl font-bold mb-4 flex items-center gap-2 shrink-0"><span class="text-3xl">🧠</span> Brain Gym</h2>
+                <div class="bg-white/20 p-4 rounded-2xl mb-4 grid grid-cols-2 md:grid-cols-4 gap-3 shrink-0">
+                    <select id="bg-class" class="bg-white/50 border-0 rounded-xl p-2 outline-none"><option value="Class 9">Class 9</option><option value="Class 10">Class 10</option><option value="Class 11">Class 11</option><option value="Class 12">Class 12</option></select>
+                    <select id="bg-exam" class="bg-white/50 border-0 rounded-xl p-2 outline-none"><option value="Boards">Boards</option><option value="JEE">JEE</option><option value="NEET">NEET</option></select>
+                    <select id="bg-subject" class="bg-white/50 border-0 rounded-xl p-2 outline-none"><option value="Math">Math</option><option value="Physics">Physics</option><option value="Chemistry">Chemistry</option><option value="Biology">Biology</option></select>
+                    <input type="text" id="bg-topic" placeholder="Topic (e.g. Thermodynamics)" class="bg-white/50 border-0 rounded-xl p-2 outline-none placeholder-gray-600">
+                </div>
+                <button onclick="app.generateQuestions()" id="btn-gen-quiz" class="w-full bg-indigo-500/80 text-white py-3 rounded-xl font-bold shadow-lg hover:bg-indigo-600/80 transition mb-4 flex items-center justify-center gap-2 shrink-0">
+                    <i class="fas fa-magic"></i> Generate Quiz (Free AI)
+                </button>
+                <div id="questions-container" class="flex-1 overflow-y-auto pr-2 space-y-4 min-h-0">
+                    <div class="text-center opacity-60 mt-10"><p>Enter a topic and Lyra will create a quiz!</p></div>
+                </div>
+            </div>
+
+            <!-- 4. Room View -->
+            <div id="view-room" class="view-section hidden flex-1 min-h-0 flex flex-col items-center">
+                <h2 class="text-2xl font-bold mb-4 shrink-0">My Cozy Room</h2>
+                <div class="bg-black/10 p-4 rounded-3xl backdrop-blur-sm shadow-inner mb-6 overflow-auto max-h-[50vh]">
+                    <div class="room-grid w-full max-w-md" id="room-grid"></div>
+                </div>
+                <div class="w-full max-w-md shrink-0">
+                    <h3 class="font-bold mb-2 opacity-80">Inventory</h3>
+                    <div class="flex gap-2 overflow-x-auto p-2 bg-white/10 rounded-xl" id="inventory-strip"></div>
+                </div>
+            </div>
+
+            <!-- 5. Shop View -->
+            <div id="view-shop" class="view-section hidden h-full flex flex-col">
+                <div class="text-center mb-6"><h2 class="text-3xl font-bold mb-2">Mystery Shop</h2><p class="opacity-80">Spend 50 Coins!</p></div>
+                <div class="flex-1 flex items-center justify-center relative">
+                    <div class="relative w-64 h-80 bg-white/30 rounded-t-full rounded-b-3xl border-4 border-white/50 flex items-center justify-center shadow-2xl">
+                        <div class="absolute bottom-4 w-20 h-8 bg-gray-800/20 rounded-full"></div>
+                        <div class="text-9xl animate-bounce cursor-pointer hover:scale-105 transition" onclick="app.pullGacha()">🎁</div>
+                        <div class="absolute -top-4 bg-yellow-400 text-yellow-900 font-bold px-4 py-1 rounded-full shadow border-2 border-white">50 🪙</div>
+                    </div>
+                </div>
+                <div id="gacha-result" class="absolute inset-0 bg-black/60 backdrop-blur-md rounded-3xl flex items-center justify-center z-20 hidden">
+                    <div class="bg-white p-8 rounded-3xl text-center shadow-2xl transform scale-0 transition-transform duration-300" id="gacha-card">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2" id="gacha-title">Clock</h3>
+                        <div class="text-6xl mb-4" id="gacha-icon">🕰️</div>
+                        <p class="text-gray-600 mb-6" id="gacha-rarity">Common</p>
+                        <button onclick="app.closeGacha()" class="bg-indigo-500 text-white px-6 py-2 rounded-xl font-bold">Awesome!</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Chat View -->
+            <div id="view-chat" class="view-section hidden flex-1 min-h-0 flex flex-col">
+                <div class="flex items-center gap-3 mb-4 border-b border-white/20 pb-2 shrink-0">
+                    <div class="w-10 h-10 rounded-full bg-pink-300 flex items-center justify-center text-xl border-2 border-white">👱‍♀️</div>
+                    <div><h2 class="font-bold text-lg">Lyra</h2><p class="text-xs opacity-70">Free AI Companion</p></div>
+                    <div class="ml-auto bg-white/20 px-3 py-1 rounded-full text-xs font-bold cursor-pointer" onclick="app.toggleChatMode()" id="chat-mode-badge">Mode: Tutor</div>
+                </div>
+                <div class="flex-1 overflow-y-auto space-y-3 pr-2 mb-4 min-h-0" id="chat-history"></div>
+                <div class="flex gap-2 shrink-0">
+                    <input type="text" id="chat-input" placeholder="Ask Lyra..." class="flex-1 bg-white/50 border-0 rounded-xl px-4 py-3 outline-none focus:bg-white/70 transition" onkeypress="if(event.key==='Enter') app.sendMessage()">
+                    <button id="btn-chat-send" onclick="app.sendMessage()" class="w-12 h-12 bg-pink-500 text-white rounded-xl flex items-center justify-center shadow-lg hover:scale-105 transition"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AESTHETIC MODAL SYSTEM -->
+    <div id="aesthetic-modal" class="fixed inset-0 z-[200] flex items-center justify-center hidden-modal">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="app.hideModal()"></div>
+        <div class="modal-content bg-white/90 text-gray-800 p-8 rounded-3xl shadow-2xl max-w-sm w-full flex flex-col items-center text-center pointer-events-auto relative mx-4 border-4 border-white/50">
+            <div id="modal-icon" class="text-6xl mb-4 animate-bounce">✨</div>
+            <h3 id="modal-title" class="text-2xl font-bold mb-2 text-gray-900">Title</h3>
+            <p id="modal-msg" class="text-gray-600 mb-6 font-medium leading-relaxed">Message content.</p>
+            <div id="modal-actions" class="flex gap-3 w-full justify-center"></div>
+        </div>
+    </div>
+
+    <!-- Theme Modal -->
+    <div id="theme-modal" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 text-white rounded-3xl w-full max-w-2xl p-6 border border-gray-700 relative">
+            <h2 class="text-2xl font-bold text-center mb-6">🎨 Choose your Vibe</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div onclick="app.setTheme('default')" class="bg-blue-500 h-32 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:scale-105 transition relative overflow-hidden group"><div class="absolute inset-0 bg-gradient-to-b from-blue-300 to-blue-500 opacity-80"></div><span class="relative z-10 text-3xl">☀️</span><span class="relative z-10 font-bold mt-2">Cozy Day</span></div>
+                <div onclick="app.setTheme('sakura')" id="btn-theme-sakura" class="bg-pink-200 h-32 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:scale-105 transition relative overflow-hidden group"><div class="absolute inset-0 bg-gradient-to-b from-pink-200 to-pink-400 opacity-80"></div><span class="relative z-10 text-3xl">🌸</span><span class="relative z-10 font-bold mt-2">Sakura</span></div>
+                <div onclick="app.setTheme('rain')" id="btn-theme-rain" class="bg-blue-900 h-32 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:scale-105 transition relative overflow-hidden group"><div class="absolute inset-0 bg-gradient-to-b from-gray-900 to-blue-900 opacity-80"></div><span class="relative z-10 text-3xl">☔</span><span class="relative z-10 font-bold mt-2">Midnight Rain</span></div>
+                <div onclick="app.setTheme('warp')" id="btn-theme-warp" class="bg-black h-32 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:scale-105 transition relative overflow-hidden group"><div class="absolute inset-0 bg-black border border-white/20"></div><span class="relative z-10 text-3xl">🌌</span><span class="relative z-10 font-bold mt-2">Warp Speed</span></div>
+                <div onclick="app.setTheme('aurora')" id="btn-theme-aurora" class="bg-green-900 h-32 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:scale-105 transition relative overflow-hidden group"><div class="absolute inset-0 bg-gradient-to-r from-green-400 to-blue-500 opacity-80"></div><span class="relative z-10 text-3xl">🌊</span><span class="relative z-10 font-bold mt-2">Aurora</span></div>
+            </div>
+            <button onclick="document.getElementById('theme-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-xl">✕</button>
+        </div>
+    </div>
+
+    <!-- Premium Modal -->
+    <div id="premium-modal" class="fixed inset-0 bg-black/80 z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-3xl w-full max-w-md p-6 border border-yellow-500/50 relative">
+            <h2 class="text-3xl font-bold text-center mb-2 text-yellow-400">Lyra Gold 💎</h2>
+            <p class="text-center text-gray-400 text-sm mb-6">Unlock Brain Gym, Themes & 2x coins.</p>
+            <div class="bg-white/10 p-4 rounded-xl mb-4 text-center">
+                <input type="text" id="promo-code" placeholder="Enter Code..." class="bg-black/30 text-center w-full p-2 rounded border border-gray-600 text-white mb-2">
+                <button onclick="app.activatePremium()" class="w-full bg-yellow-500 text-black font-bold py-2 rounded hover:bg-yellow-400 transition">Unlock Gold</button>
+            </div>
+            <button onclick="document.getElementById('premium-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-500 hover:text-white">✕</button>
+        </div>
+    </div>
+
+    <!-- Coach Modal (Pause) -->
+    <div id="coach-modal" class="fixed inset-0 bg-red-900/90 z-[100] hidden flex items-center justify-center p-4 backdrop-blur-lg">
+        <div class="bg-white text-gray-800 rounded-3xl w-full max-w-md p-8 text-center relative shadow-2xl border-4 border-red-500">
+            <div class="text-6xl mb-4">😤</div>
+            <h2 class="text-2xl font-bold mb-2 text-red-600">HOLD ON!</h2>
+            <textarea id="excuse-input" class="w-full border-2 border-gray-200 rounded-xl p-3 mb-4 outline-none" placeholder="Why stop?"></textarea>
+            <div class="flex gap-2 justify-center">
+                <button onclick="app.submitExcuse()" class="bg-red-500 text-white px-6 py-2 rounded-full font-bold shadow-lg">Submit Excuse</button>
+                <button onclick="app.cancelBreak()" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-full font-bold">Keep Focusing</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ITEMS_DB = [
+            { id: 'clock', icon: '🕰️', name: 'Antique Clock', rarity: 'Common' },
+            { id: 'plant', icon: '🪴', name: 'Succulent', rarity: 'Common' },
+            { id: 'lamp', icon: '💡', name: 'Cozy Lamp', rarity: 'Rare' },
+            { id: 'cat', icon: '🐈', name: 'Mochi', rarity: 'Rare' },
+            { id: 'rocket', icon: '🚀', name: 'Rocketship', rarity: 'Legendary' },
+            { id: 'tea', icon: '🍵', name: 'Green Tea', rarity: 'Common' },
+            { id: 'books', icon: '📚', name: 'Stack of Books', rarity: 'Common' },
+            { id: 'crystal', icon: '🔮', name: 'Magic Crystal', rarity: 'Legendary' }
+        ];
+        const PET_EVOLUTION = ['🧸', '🐼', '🦁', '🦄', '🐲'];
+        const STUDY_TIPS = [
+            "Start with the hardest task first! 🐸",
+            "Use the Pomodoro technique: 25m work, 5m break.",
+            "Explain the concept to a rubber duck (or me!) 🧸",
+            "Hydrate! Your brain needs water to focus.",
+            "Clean desk = Clean mind. ✨"
+        ];
+
+        class CozyApp {
+            constructor() {
+                this.state = {
+                    username: null,
+                    coins: 0, xp: 0, level: 1, inventory: [], room: Array(12).fill(null),
+                    isPremium: false, timerActive: false, timeLeft: 25 * 60, timerDuration: 25 * 60,
+                    view: 'timer', chatMode: 'tutor', userId: null,
+                    currentTheme: 'default',
+                    chatMemory: [],
+                    todos: [],
+                    isOffline: false
+                };
+                this.timerInterval = null;
+                this.themeInterval = null; 
+                this.warpReqId = null; 
+                this.init();
+            }
+
+            async init() {
+                this.createStars(); 
+                if(window.auth && window.onAuthStateChanged) {
+                    window.onAuthStateChanged(window.auth, async (user) => {
+                        if (user) { 
+                            this.state.userId = user.uid; 
+                            this.state.username = user.displayName || "Student";
+                            await this.loadData(); 
+                            // Force enter if we are on login screen
+                            if(document.getElementById('view-login').style.display !== 'none') {
+                                this.enterApp();
+                            }
+                        }
+                    });
+                }
+                this.loadLocal(); 
+                this.updateThemeUI(); 
+            }
+
+            // --- NEW: OFFLINE MODE (FOR LOCAL FILES) ---
+            enterOffline() {
+                this.state.isOffline = true;
+                this.state.username = "Offline Guest";
+                this.state.coins = 999; 
+                this.showModal("Offline Mode", "You are disconnected from the database, but you can still study! 📚", "🔌");
+                this.enterApp();
+            }
+
+            // --- LOGIN / LOGOUT / CONFIG LOGIC ---
+            
+            async loginGoogle() {
+                if (!window.auth || !window.googleProvider) {
+                    return this.showModal("Connection Error", "Could not connect to Google. Check console for details.", "⚠️");
+                }
+                try {
+                    await window.signInWithPopup(window.auth, window.googleProvider);
+                } catch (e) {
+                    console.error(e);
+                    if (e.code === 'auth/operation-not-allowed') {
+                        this.showModal("Login Error", "Google Login is not enabled in Firebase console.", "🔒");
+                    } else {
+                        this.showModal("Login Failed", `Error: ${e.message}. \n\nTry using 'Continue Offline'!`, "❌");
+                    }
+                }
+            }
+
+            enterApp() {
+                document.getElementById('view-login').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('view-login').style.display = 'none';
+                    const appLayout = document.getElementById('app-layout');
+                    appLayout.style.opacity = '1';
+                    appLayout.style.pointerEvents = 'auto';
+                    this.updateUI();
+                    this.setTheme(this.state.currentTheme, true);
+                    this.showModal(`Welcome, ${this.state.username.split(' ')[0]}!`, "Ready to focus? 🧸", "✨");
+                }, 700);
+            }
+
+            async logout() {
+                this.showModal("Logout?", "Are you sure you want to leave?", "🚪", [
+                    { label: "Stay", class: "bg-gray-200", onClick: () => {}, close: true },
+                    { label: "Leave", class: "bg-red-500 text-white", onClick: async () => {
+                        if(window.auth && !this.state.isOffline) await window.signOut(window.auth);
+                        this.state.username = null;
+                        this.state.userId = null;
+                        this.state.isOffline = false;
+                        localStorage.removeItem('cozyState'); 
+                        location.reload(); 
+                    }, close: true }
+                ]);
+            }
+
+            createStars() {
+                const container = document.getElementById('stars-layer');
+                container.innerHTML = '';
+                for(let i=0; i<50; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    star.style.left = Math.random() * 100 + '%';
+                    star.style.top = Math.random() * 80 + '%'; 
+                    star.style.animationDelay = Math.random() * 2 + 's';
+                    container.appendChild(star);
+                }
+            }
+
+            // --- AESTHETIC NOTIFICATIONS ---
+            showModal(title, msg, icon = '✨', actions = []) {
+                const modal = document.getElementById('aesthetic-modal');
+                document.getElementById('modal-title').innerText = title;
+                document.getElementById('modal-msg').innerText = msg;
+                document.getElementById('modal-icon').innerText = icon;
+                
+                const actionContainer = document.getElementById('modal-actions');
+                actionContainer.innerHTML = '';
+                
+                if (actions.length === 0) {
+                    const btn = document.createElement('button');
+                    btn.innerText = "Okay";
+                    btn.className = "bg-indigo-500 text-white px-6 py-2 rounded-full font-bold shadow-lg hover:bg-indigo-600 transition";
+                    btn.onclick = () => this.hideModal();
+                    actionContainer.appendChild(btn);
+                } else {
+                    actions.forEach(action => {
+                        const btn = document.createElement('button');
+                        btn.innerText = action.label;
+                        btn.className = `px-6 py-2 rounded-full font-bold shadow-lg transition ${action.class || 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`;
+                        btn.onclick = () => { action.onClick(); if(action.close) this.hideModal(); };
+                        actionContainer.appendChild(btn);
+                    });
+                }
+                
+                modal.classList.remove('hidden-modal');
+            }
+
+            hideModal() {
+                document.getElementById('aesthetic-modal').classList.add('hidden-modal');
+            }
+
+            // --- THEME ENGINE ---
+            toggleThemeModal() {
+                this.updateThemeUI();
+                document.getElementById('theme-modal').classList.remove('hidden');
+            }
+
+            updateThemeUI() {
+                const themes = ['sakura', 'rain', 'warp', 'aurora'];
+                themes.forEach(t => {
+                    const el = document.getElementById(`btn-theme-${t}`);
+                    if(!this.state.isPremium) el.classList.add('locked-theme');
+                    else el.classList.remove('locked-theme');
+                });
+            }
+
+            setTheme(themeName, force = false) {
+                if (themeName !== 'default' && !this.state.isPremium && !force) {
+                    document.getElementById('theme-modal').classList.add('hidden');
+                    return this.togglePremium();
+                }
+
+                clearInterval(this.themeInterval);
+                if (this.warpReqId) cancelAnimationFrame(this.warpReqId);
+
+                document.getElementById('default-sky').style.opacity = '0';
+                ['sakura', 'rain', 'warp', 'aurora'].forEach(t => {
+                    const el = document.getElementById(`theme-${t}`);
+                    el.style.opacity = '0';
+                    if(t !== 'warp') el.innerHTML = ''; 
+                });
+
+                this.state.currentTheme = themeName;
+                
+                if (themeName === 'default') {
+                    document.getElementById('default-sky').style.opacity = '1';
+                } else {
+                    const layer = document.getElementById(`theme-${themeName}`);
+                    layer.style.opacity = '1';
+                    if (themeName === 'sakura') this.startSakura(layer);
+                    if (themeName === 'rain') this.startRain(layer);
+                    if (themeName === 'warp') this.startWarp();
+                }
+                
+                document.getElementById('theme-modal').classList.add('hidden');
+                this.saveData();
+            }
+
+            startSakura(container) {
+                this.themeInterval = setInterval(() => {
+                    const p = document.createElement('div');
+                    p.className = 'petal';
+                    p.style.left = Math.random() * 100 + '%';
+                    p.style.width = (Math.random() * 10 + 10) + 'px';
+                    p.style.height = p.style.width;
+                    p.style.animationDuration = (Math.random() * 3 + 4) + 's'; 
+                    container.appendChild(p);
+                    setTimeout(() => p.remove(), 7000);
+                }, 300);
+            }
+
+            startRain(container) {
+                this.themeInterval = setInterval(() => {
+                    const r = document.createElement('div');
+                    r.className = 'rain-streak';
+                    r.style.left = Math.random() * 100 + '%';
+                    r.style.height = (Math.random() * 20 + 20) + 'px';
+                    container.appendChild(r);
+                    setTimeout(() => r.remove(), 700);
+                }, 20);
+            }
+
+            startWarp() {
+                const canvas = document.getElementById('warp-canvas');
+                const ctx = canvas.getContext('2d');
+                let width, height;
+                const resize = () => { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; };
+                window.addEventListener('resize', resize);
+                resize();
+                const stars = [];
+                for (let i = 0; i < 400; i++) stars.push({ x: Math.random() * width - width/2, y: Math.random() * height - height/2, z: Math.random() * width });
+                const draw = () => {
+                    ctx.fillStyle = 'black'; ctx.fillRect(0, 0, width, height); ctx.fillStyle = 'white';
+                    stars.forEach(star => {
+                        star.z -= 15; 
+                        if (star.z <= 0) { star.x = Math.random() * width - width/2; star.y = Math.random() * height - height/2; star.z = width; }
+                        const x = (star.x / star.z) * 100 + width / 2;
+                        const y = (star.y / star.z) * 100 + height / 2;
+                        const size = (1 - star.z / width) * 3;
+                        if(x > 0 && x < width && y > 0 && y < height) { ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI * 2); ctx.fill(); }
+                    });
+                    this.warpReqId = requestAnimationFrame(draw);
+                };
+                draw();
+            }
+
+            // --- STANDARD UI LOGIC ---
+            setView(viewName) {
+                document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+                document.getElementById(`view-${viewName}`).classList.remove('hidden');
+                const panel = document.getElementById('main-panel');
+                panel.classList.remove('opacity-100');
+                void panel.offsetWidth; 
+                panel.classList.add('opacity-100');
+            }
+
+            toggleTimer() {
+                if (this.state.timerActive) return;
+                this.state.timerActive = true;
+                document.getElementById('btn-start').classList.add('hidden');
+                document.getElementById('btn-break').classList.remove('hidden');
+                this.timerInterval = setInterval(() => {
+                    if (this.state.timeLeft > 0) {
+                        this.state.timeLeft--;
+                        this.updateTimerDisplay();
+                    } else {
+                        this.finishTimer();
+                    }
+                }, 1000);
+            }
+
+            tryPause() { document.getElementById('coach-modal').classList.remove('hidden'); }
+            cancelBreak() { document.getElementById('coach-modal').classList.add('hidden'); }
+            
+            async submitExcuse() {
+                const excuse = document.getElementById('excuse-input').value;
+                const btn = document.querySelector('#coach-modal button');
+                btn.innerText = "Analyzing...";
+                try {
+                    const res = await this.callAI(`Act as a strict study coach. User excuse: "${excuse}". If valid (emergency/health), start with ALLOW:. Else start with DENY:.`);
+                    if (res.includes("ALLOW")) {
+                        this.showModal("Approved ✅", res.replace("ALLOW:", ""), "👍");
+                        this.pauseTimerReal();
+                    } else {
+                        this.showModal("Denied ❌", res.replace("DENY:", ""), "🚫");
+                    }
+                } catch (e) {
+                    console.error(e);
+                    this.pauseTimerReal(); 
+                }
+                document.getElementById('coach-modal').classList.add('hidden');
+                btn.innerText = "Submit Excuse";
+            }
+
+            pauseTimerReal() {
+                clearInterval(this.timerInterval);
+                this.state.timerActive = false;
+                document.getElementById('btn-start').classList.remove('hidden');
+                document.getElementById('btn-start').innerText = "Resume";
+                document.getElementById('btn-break').classList.add('hidden');
+            }
+
+            finishTimer() {
+                clearInterval(this.timerInterval);
+                this.state.timerActive = false;
+                this.state.timeLeft = this.state.timerDuration;
+                this.updateTimerDisplay();
+                document.getElementById('btn-start').classList.remove('hidden');
+                document.getElementById('btn-start').innerText = "Start Focus";
+                document.getElementById('btn-break').classList.add('hidden');
+                this.addRewards(this.state.isPremium ? 100 : 50, 25);
+                this.showModal("Focus Complete!", "You did great! Here are some coins.", "🍅");
+            }
+
+            updateTimerDisplay() {
+                const m = Math.floor(this.state.timeLeft / 60).toString().padStart(2, '0');
+                const s = (this.state.timeLeft % 60).toString().padStart(2, '0');
+                document.getElementById('time-display').innerText = `${m}:${s}`;
+                const circle = document.getElementById('timer-circle');
+                const r = circle.r.baseVal.value;
+                const c = r * 2 * Math.PI;
+                circle.style.strokeDashoffset = c - (this.state.timeLeft / this.state.timerDuration) * c;
+            }
+
+            async generateQuestions() {
+                const topic = document.getElementById('bg-topic').value;
+                if (!topic) return this.showModal("Wait!", "Please enter a topic first!", "🤔");
+                
+                const btn = document.getElementById('btn-gen-quiz');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Generating...`;
+                btn.disabled = true;
+
+                const container = document.getElementById('questions-container');
+                container.innerHTML = `<div class="text-center mt-10"><i class="fas fa-spinner fa-spin text-3xl"></i><p>Lyra is thinking (free server)...</p></div>`;
+
+                const prompt = `Create 5 multiple choice questions about "${topic}". Strictly return ONLY a raw JSON array. Use LaTeX for math/science formulas (enclosed in single $ signs, e.g., $E=mc^2$). Format: [{"q":"Question?","options":["A","B","C","D"],"correct":0,"explanation":"Why"}]`;
+
+                try {
+                    let jsonStr = await this.callAI(prompt);
+                    jsonStr = jsonStr.replace(/```json/g, '').replace(/```/g, '').trim();
+                    const firstBracket = jsonStr.indexOf('[');
+                    const lastBracket = jsonStr.lastIndexOf(']');
+                    
+                    if(firstBracket !== -1 && lastBracket !== -1) {
+                        jsonStr = jsonStr.substring(firstBracket, lastBracket + 1);
+                        const questions = JSON.parse(jsonStr);
+                        this.renderQuestions(questions);
+                        if (this.state.userId && window.addDoc) {
+                            const colRef = window.collection(window.db, 'artifacts', window.appId, 'users', this.state.userId, 'questions');
+                            window.addDoc(colRef, { topic, questions, timestamp: new Date() }).catch(e=>{});
+                        }
+                    } else throw new Error("AI didn't send JSON");
+                } catch (e) {
+                    console.error(e);
+                    container.innerHTML = `<div class="text-red-500 text-center bg-red-100 p-4 rounded">AI Error: ${e.message}<br>Try again!</div>`;
+                }
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+
+            renderQuestions(questions) {
+                const container = document.getElementById('questions-container');
+                container.innerHTML = '';
+                questions.forEach((q, idx) => {
+                    const el = document.createElement('div');
+                    el.className = 'bg-white/40 p-4 rounded-xl mb-3 shadow-sm';
+                    el.innerHTML = `
+                        <div class="font-bold mb-2 text-lg">Q${idx+1}: ${q.q}</div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            ${q.options.map((opt, i) => `<button class="text-left p-2 rounded bg-white/50 hover:bg-white/80 transition" onclick="app.checkAnswer(this, ${i}, ${q.correct}, '${q.explanation.replace(/'/g, "\\'")}')">${String.fromCharCode(65+i)}. ${opt}</button>`).join('')}
+                        </div>
+                        <div class="result mt-2 text-sm font-bold hidden"></div>
+                    `;
+                    container.appendChild(el);
+                });
+                const katexOps = { delimiters: [{left: "$$", right: "$$", display: true}, {left: "$", right: "$", display: false}] };
+                if(window.renderMathInElement) window.renderMathInElement(container, katexOps);
+            }
+
+            checkAnswer(btn, selected, correct, explanation) {
+                const parent = btn.parentElement;
+                const resultDiv = parent.nextElementSibling;
+                parent.querySelectorAll('button').forEach(b => b.disabled = true);
+                if (selected === correct) {
+                    btn.classList.add('bg-green-400', 'text-white');
+                    resultDiv.innerHTML = `<span class="text-green-800">Correct! +10 Coins. ${explanation}</span>`;
+                    this.addRewards(10, 5);
+                } else {
+                    btn.classList.add('bg-red-400', 'text-white');
+                    parent.querySelectorAll('button')[correct].classList.add('bg-green-400', 'text-white');
+                    resultDiv.innerHTML = `<span class="text-red-800">Wrong. ${explanation}</span>`;
+                }
+                resultDiv.classList.remove('hidden');
+            }
+
+            // --- TO-DO LIST LOGIC ---
+            addTodo() {
+                const input = document.getElementById('todo-input');
+                const text = input.value.trim();
+                if (!text) return;
+                
+                this.state.todos.push({ id: Date.now(), text: text, completed: false });
+                input.value = '';
+                this.renderTodos();
+                this.saveData();
+            }
+
+            toggleTodo(id) {
+                const todo = this.state.todos.find(t => t.id === id);
+                if (todo) {
+                    todo.completed = !todo.completed;
+                    if(todo.completed) this.showModal("Good job!", "Task completed! ✅", "🎉");
+                    this.renderTodos();
+                    this.saveData();
+                }
+            }
+
+            deleteTodo(id) {
+                this.state.todos = this.state.todos.filter(t => t.id !== id);
+                this.renderTodos();
+                this.saveData();
+            }
+
+            renderTodos() {
+                const list = document.getElementById('todo-list');
+                list.innerHTML = '';
+                if (this.state.todos.length === 0) {
+                    list.innerHTML = `<div class="text-center opacity-60 mt-10"><p>No tasks yet! Time to relax? 😴</p></div>`;
+                    return;
+                }
+                this.state.todos.forEach(todo => {
+                    const div = document.createElement('div');
+                    div.className = `todo-item flex items-center gap-3 bg-white/30 p-3 rounded-xl ${todo.completed ? 'completed' : ''}`;
+                    div.innerHTML = `
+                        <div class="todo-check" onclick="app.toggleTodo(${todo.id})">
+                            ${todo.completed ? '<i class="fas fa-check text-white text-sm"></i>' : ''}
+                        </div>
+                        <span class="flex-1 font-medium">${todo.text}</span>
+                        <button onclick="app.deleteTodo(${todo.id})" class="text-red-400 hover:text-red-600 px-2"><i class="fas fa-trash"></i></button>
+                    `;
+                    list.appendChild(div);
+                });
+            }
+
+            pullGacha() {
+                if (this.state.coins < 50) return this.showModal("Not Enough Coins", "You need 50 coins to pull! Keep studying!", "🪙");
+                this.state.coins -= 50;
+                this.updateUI();
+                const rand = Math.random();
+                let rarity = rand > 0.9 ? 'Legendary' : (rand > 0.6 ? 'Rare' : 'Common');
+                const pool = ITEMS_DB.filter(i => i.rarity === rarity);
+                const item = pool[Math.floor(Math.random() * pool.length)];
+                
+                const modal = document.getElementById('gacha-result');
+                document.getElementById('gacha-title').innerText = item.name;
+                document.getElementById('gacha-icon').innerText = item.icon;
+                document.getElementById('gacha-rarity').innerText = item.rarity;
+                modal.classList.remove('hidden');
+                setTimeout(() => document.getElementById('gacha-card').classList.remove('scale-0'), 100);
+                
+                this.state.inventory.push(item);
+                this.renderRoom();
+                this.saveData();
+            }
+
+            closeGacha() {
+                document.getElementById('gacha-card').classList.add('scale-0');
+                setTimeout(() => document.getElementById('gacha-result').classList.add('hidden'), 300);
+            }
+
+            renderRoom() {
+                const grid = document.getElementById('room-grid');
+                grid.innerHTML = '';
+                this.state.room.forEach((item, idx) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'room-cell bg-white/5';
+                    if (item) {
+                        cell.innerText = item.icon;
+                        cell.onclick = () => this.interactItem(item, idx);
+                    } else {
+                        cell.onclick = () => this.placeItem(idx);
+                    }
+                    grid.appendChild(cell);
+                });
+                const strip = document.getElementById('inventory-strip');
+                strip.innerHTML = '';
+                this.state.inventory.forEach((item, idx) => {
+                    const el = document.createElement('div');
+                    el.className = 'w-12 h-12 bg-white/20 rounded flex items-center justify-center text-2xl cursor-grab shrink-0';
+                    el.innerText = item.icon;
+                    el.onclick = () => { this.selectedInvIdx = idx; this.showModal("Selected", `You selected ${item.name}. Tap an empty room slot to place it!`, item.icon); };
+                    strip.appendChild(el);
+                });
+            }
+
+            placeItem(idx) {
+                if (this.selectedInvIdx === undefined) return;
+                this.state.room[idx] = this.state.inventory[this.selectedInvIdx];
+                this.state.inventory.splice(this.selectedInvIdx, 1);
+                this.selectedInvIdx = undefined;
+                this.renderRoom(); this.saveData();
+            }
+
+            interactItem(item, idx) {
+                // 1. Define Content based on item
+                let title = item.name;
+                let msg = "";
+                let icon = item.icon;
+                let actionLabel = "Use & Discard";
+
+                if (item.id === 'lamp') {
+                    msg = "Toggle the ambient lighting? (Item will be consumed)";
+                    actionLabel = "Toggle Light";
+                } else if (item.id === 'clock') {
+                    msg = "Current Time: " + new Date().toLocaleTimeString() + "\n(Clock will disappear after checking)";
+                    actionLabel = "Okay";
+                } else if (item.id === 'books') {
+                    const tip = STUDY_TIPS[Math.floor(Math.random() * STUDY_TIPS.length)];
+                    msg = `📖 Tip: ${tip}`;
+                    actionLabel = "Learned it!";
+                } else if (item.id === 'plant') {
+                    msg = "🌿 Breathe in... Hold... Breathe out... (Stress -10%)";
+                    actionLabel = "Feel Better";
+                } else if (item.id === 'tea' || item.id === 'coffee') {
+                    msg = "☕ *Slurp* Caffeine Boost activated! (+XP gain)";
+                    actionLabel = "Drink";
+                } else if (item.id === 'cat') {
+                    msg = "🐱 *Purr* Mochi gives you emotional support.";
+                    actionLabel = "Pet & Bye";
+                } else if (item.id === 'rocket') {
+                    msg = "🚀 3..2..1.. Blast off! Motivation +100!";
+                    actionLabel = "Launch";
+                } else if (item.id === 'crystal') {
+                    msg = "🔮 The future looks bright. Keep studying.";
+                    actionLabel = "Manifest";
+                }
+
+                // 2. Show Modal with "Consume" logic
+                this.showModal(title, msg, icon, [
+                    { 
+                        label: "Keep (Cancel)", 
+                        class: "bg-gray-200 text-gray-800 hover:bg-gray-300", 
+                        onClick: () => {}, // Do nothing, stays in room
+                        close: true 
+                    },
+                    { 
+                        label: actionLabel, 
+                        class: "bg-red-500 text-white hover:bg-red-600", 
+                        onClick: () => {
+                            // Logic for Lamp Toggle (simple simulation since sky runs on keyframes)
+                            if(item.id === 'lamp') {
+                                const sky = document.querySelector('.sky-container');
+                                // Simple visual feedback since true toggle requires complex state
+                                sky.style.filter = sky.style.filter === 'brightness(0.5)' ? 'brightness(1)' : 'brightness(0.5)';
+                            }
+                            
+                            // CONSUME ITEM
+                            this.state.room[idx] = null;
+                            this.renderRoom();
+                            this.saveData();
+                        }, 
+                        close: true 
+                    }
+                ]);
+            }
+
+            toggleChatMode() {
+                this.state.chatMode = this.state.chatMode === 'tutor' ? 'coach' : 'tutor';
+                document.getElementById('chat-mode-badge').innerText = `Mode: ${this.state.chatMode === 'tutor' ? 'Tutor' : 'Strict Coach'}`;
+            }
+
+            async sendMessage() {
+                const input = document.getElementById('chat-input');
+                const btn = document.getElementById('btn-chat-send');
+                const txt = input.value.trim();
+                if (!txt) return;
+
+                this.addChatBubble(txt, true);
+                input.value = '';
+                btn.disabled = true;
+
+                this.state.chatMemory.push({ role: 'user', content: txt });
+
+                const systemPersona = this.state.chatMode === 'tutor' 
+                    ? "Act as a cute, sassy study teacher named Lyra. 🍎✨ You are smart and helpful but have a cheeky, teasing attitude. You love to teach but will scold playfully if the user isn't focusing. IMPORTANT: Do NOT generate questions or quizzes. Only answer what the user asks clearly. Use cute emojis. Use LaTeX for all math expressions (enclosed in $ like $x^2$)." 
+                    : "Act as a strict study coach. 😤 Answer questions directly but push the user to study hard. Do not accept excuses. Do not generate quizzes. Use LaTeX for math (enclosed in $).";
+
+                const recentHistory = this.state.chatMemory.slice(-10);
+                const apiMessages = [{ role: 'system', content: systemPersona }, ...recentHistory];
+
+                this.showLoading();
+                try {
+                    const reply = await this.callAI(apiMessages);
+                    this.hideLoading();
+                    this.addChatBubble(reply, false);
+                    this.state.chatMemory.push({ role: 'assistant', content: reply });
+                    this.saveData(); 
+                } catch (e) {
+                    this.hideLoading();
+                    this.addChatBubble(`😖 Oops! Connection error. Try again!`, false);
+                }
+                btn.disabled = false;
+            }
+
+            showLoading() {
+                const h = document.getElementById('chat-history');
+                const div = document.createElement('div');
+                div.id = 'chat-loading';
+                div.className = 'bg-white/30 self-start p-3 rounded-2xl rounded-tl-none max-w-[80%] flex gap-2 items-center';
+                div.innerHTML = `<span class="text-xs opacity-70">Lyra is typing</span><div class="flex gap-1"><div class="w-2 h-2 bg-pink-400 rounded-full dot-bounce"></div><div class="w-2 h-2 bg-pink-400 rounded-full dot-bounce delay-100"></div><div class="w-2 h-2 bg-pink-400 rounded-full dot-bounce delay-200"></div></div>`;
+                h.appendChild(div);
+                h.scrollTop = h.scrollHeight;
+            }
+
+            hideLoading() {
+                const el = document.getElementById('chat-loading');
+                if(el) el.remove();
+            }
+
+            addChatBubble(text, isUser) {
+                const h = document.getElementById('chat-history');
+                const div = document.createElement('div');
+                div.className = isUser ? 'bg-purple-500 text-white self-end p-3 rounded-2xl rounded-tr-none max-w-[80%]' : 'bg-white/30 self-start p-3 rounded-2xl rounded-tl-none max-w-[80%]';
+                div.innerText = text;
+                h.appendChild(div);
+                h.scrollTop = h.scrollHeight;
+                const katexOps = { delimiters: [{left: "$$", right: "$$", display: true}, {left: "$", right: "$", display: false}] };
+                if(!isUser && window.renderMathInElement) window.renderMathInElement(div, katexOps);
+            }
+
+            async callAI(input) {
+                const url = 'https://text.pollinations.ai/';
+                const messages = typeof input === 'string' ? [{ role: 'user', content: input }] : input;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ messages: messages, model: 'openai', seed: Math.floor(Math.random() * 1000) })
+                });
+                if (!response.ok) throw new Error("Free Server Busy");
+                return await response.text();
+            }
+
+            addRewards(coins, xp) {
+                this.state.coins += coins;
+                this.state.xp += xp;
+                const required = this.state.level * 100;
+                if (this.state.xp >= required) {
+                    this.state.level++;
+                    this.state.xp -= required;
+                    this.showModal("Level Up!", `You are now Level ${this.state.level}! 🌟`, "🎉");
+                    const petIdx = Math.min(Math.floor(this.state.level / 2), PET_EVOLUTION.length - 1);
+                    document.getElementById('pet-avatar').innerText = PET_EVOLUTION[petIdx];
+                }
+                this.updateUI();
+                this.saveData();
+            }
+
+            updateUI() {
+                const name = this.state.username || 'Student';
+                // Show first name only
+                document.getElementById('username-disp').innerText = name.split(' ')[0];
+                document.getElementById('coin-disp').innerText = this.state.coins;
+                document.getElementById('lvl-disp').innerText = this.state.level;
+                document.getElementById('xp-bar').style.width = `${(this.state.xp / (this.state.level * 100)) * 100}%`;
+                if (this.state.isPremium) {
+                    document.getElementById('brain-lock-overlay').classList.add('hidden');
+                } else {
+                    document.getElementById('brain-lock-overlay').classList.remove('hidden');
+                }
+            }
+
+            togglePremium() { document.getElementById('premium-modal').classList.remove('hidden'); }
+            activatePremium() {
+                const code = document.getElementById('promo-code').value;
+                if (code === 'COZY2025' || code === 'ADMIN_GOD_MODE') {
+                    this.state.isPremium = true;
+                    this.showModal("Premium Unlocked", "Welcome to Lyra Gold! 💎 Themes & Brain Gym are now open.", "👑");
+                    document.getElementById('premium-modal').classList.add('hidden');
+                    this.updateThemeUI();
+                    this.updateUI();
+                    this.saveData();
+                } else this.showModal("Error", "Invalid Code!", "❌");
+            }
+
+            saveData() {
+                if (this.state.isOffline) {
+                    // Save to LocalStorage only in Offline Mode
+                    localStorage.setItem('cozyState', JSON.stringify(this.state));
+                    return;
+                }
+
+                localStorage.setItem('cozyState', JSON.stringify(this.state));
+                if (this.state.userId && window.setDoc) {
+                    const docRef = window.doc(window.db, 'artifacts', window.appId, 'users', this.state.userId, 'profile', 'main');
+                    const d = { ...this.state }; delete d.questions; 
+                    window.setDoc(docRef, d).catch(e=>{});
+                }
+            }
+
+            loadLocal() {
+                const s = localStorage.getItem('cozyState');
+                if (s) { 
+                    const loaded = JSON.parse(s);
+                    this.state = { ...this.state, ...loaded }; 
+                    if(!Array.isArray(this.state.chatMemory)) this.state.chatMemory = [];
+                    if(!Array.isArray(this.state.todos)) this.state.todos = [];
+                    this.updateUI(); 
+                    this.renderRoom();
+                    this.renderTodos();
+                    const historyDiv = document.getElementById('chat-history');
+                    if(this.state.chatMemory.length > 0) historyDiv.innerHTML = '';
+                    this.state.chatMemory.forEach(msg => this.addChatBubble(msg.content, msg.role === 'user'));
+                    if(this.state.chatMemory.length === 0) historyDiv.innerHTML = `<div class="bg-white/30 self-start p-3 rounded-2xl rounded-tl-none max-w-[80%]">Hi! I'm Lyra. I'm unlocked and free to chat! 💖</div>`;
+                }
+            }
+
+            async loadData() {
+                if (this.state.isOffline || !this.state.userId || !window.getDoc) return;
+                try {
+                    const snap = await window.getDoc(window.doc(window.db, 'artifacts', window.appId, 'users', this.state.userId, 'profile', 'main'));
+                    if (snap.exists()) {
+                        const r = snap.data();
+                        // Simple conflict resolution: if remote has more XP, use remote
+                        if (r.xp >= this.state.xp) { 
+                            this.state = { ...this.state, ...r }; 
+                            if(!Array.isArray(this.state.chatMemory)) this.state.chatMemory = [];
+                            if(!Array.isArray(this.state.todos)) this.state.todos = [];
+                            this.updateUI(); this.renderRoom(); this.renderTodos(); this.setTheme(this.state.currentTheme, true);
+                        }
+                    } else {
+                        // SELF-HEALING: Database is empty, but user is logged in. Create data now!
+                        console.log("Database empty... Creating profile.");
+                        this.saveData();
+                        this.updateUI();
+                    }
+                } catch(e){}
+            }
+        }
+
+        window.app = new CozyApp();
+    </script>
+</body>
+</html>
